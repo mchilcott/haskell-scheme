@@ -17,7 +17,7 @@ readExpr input = case parse parseExpr "lisp" input of
     -- Left value is error
     Left err -> "No match: " ++ show err
     -- Right value is LispVal parsed
-    Right val -> "Found value"
+    Right val -> "Found value " ++ lispValStr val
 
 -- Different Classes of Scheme Data
 data LispVal = Atom String                    -- Atom (e.g. identifier)
@@ -27,6 +27,18 @@ data LispVal = Atom String                    -- Atom (e.g. identifier)
      | String String                          -- String literal
      | Bool Bool                              -- Boolean Value
      | Character Char                         -- Character Literal
+
+-- Convert to a string for printing
+lispValStr :: LispVal -> String
+lispValStr s = case s of
+                 Number s -> "num:" ++ show s
+                 Character s -> "char:" ++ show s
+                 String s-> "string:\"" ++ s ++ "\""
+                 Bool s-> "bool:" ++ show s
+                 Atom s-> "atom:"++ s
+                 List s-> "List"
+                 DottedList s i -> "DottedList"
+                 
 
 -- Parse a string literal
 parseString :: Parser LispVal
@@ -76,7 +88,7 @@ parseCharacter = do
 
 -- Expression Parser - Top level parser
 parseExpr :: Parser LispVal
-parseExpr = parseCharacter
+parseExpr = (try parseCharacter)
           <|> parseAtom
           <|> parseString
           <|> parseNumber
