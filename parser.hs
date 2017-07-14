@@ -2,6 +2,7 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
 import Control.Monad
 import Numeric
+import Data.Char
 
 -- Symbol Parser
 symbol :: Parser Char
@@ -39,6 +40,20 @@ lispValStr s = case s of
                  List s-> "List"
                  DottedList s i -> "DottedList"
                  
+-- Parse and covert an escaped character in a string
+-- This is incomplete, and replaces any unknown char
+-- with a !
+parseEscapeChar :: Parser Char
+parseEscapeChar = do
+  char '\\'
+  x <- oneOf("\"\'\\nrt")
+  return $ case x of
+    '"' -> '"'
+    '\'' -> '\''
+    'n'  -> '\n'
+    'r'  -> '\r'
+    't'  -> '\t'
+    '\\' -> '\\'
 
 -- Parse a string literal
 parseString :: Parser LispVal
@@ -46,7 +61,9 @@ parseString = do
                 -- Expect string literal to start with "
                 char '"'
                 -- And to finish when it finds an unescaped "
-                x <- manyTill anyChar (try (noneOf ("\\") >> char '\"'))
+                x <- manyTill
+                  (try (parseEscapeChar) <|> anyChar)
+                  (char '"')
 
                 return $ String x
 
@@ -62,16 +79,29 @@ parseAtom = do
                  "#f" -> Bool False
                  _    -> Atom atom
 
--- Number Parser - This version uses function to Monad conversion
 parseNumber :: Parser LispVal
-parseNumber = liftM (Number . read) $ many1 digit
+parseNumber = parseNumberPlain
+--               <|> parseNumberBase
 
--- Number Parser using do notation - Broken
---parseNumber :: Parser LispVal
---parseNumber = do
---            x <- many1 (digit)
---            [(a,_)] <- readDec (x)
---            return a
+-- Plain Number Parser - This version uses function to Monad conversion
+parseNumberPlain :: Parser LispVal
+parseNumberPlain = liftM (Number . read) $ many1 digit
+
+-- analogous to isDigit, isOctdigit, isHexDigit
+isBinDigit :: Char -> Bool
+isBinDigit c = (c == '0' || c == '1')
+
+-- Number Parser for numbers prefixed with a base
+--parseNumberBase :: Parser LispVal
+--parseNumberBase = do
+--           char '#'
+--           x <- oneOf("bodx")
+--           y <- many1(digit)
+--           return $ case x of
+--              'b' -> fst (head (readInt 2 isBinDigit digitToInt y))
+--              'o' -> fst (head (readOct y))
+--              'd' -> fst (head (readDec y))
+--              'x' -> fst (head (readHex y))
 
 parseCharacter :: Parser LispVal
 parseCharacter = do
