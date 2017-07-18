@@ -12,6 +12,9 @@ clean:
 test:
 # Atom
 	./parser "atom"
+# Boolean
+	./parser "#t"
+	./parser "#f"
 # Character
 	./parser "#\a"
 	./parser "#\A"

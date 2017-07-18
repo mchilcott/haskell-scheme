@@ -71,7 +71,7 @@ parseAtom = do
 
 parseNumber :: Parser LispVal
 parseNumber = parseNumberPlain
---               <|> parseNumberBase
+               <|> parseNumberBase
 
 -- Plain Number Parser - This version uses function to Monad conversion
 parseNumberPlain :: Parser LispVal
@@ -82,16 +82,21 @@ isBinDigit :: Char -> Bool
 isBinDigit c = (c == '0' || c == '1')
 
 -- Number Parser for numbers prefixed with a base
---parseNumberBase :: Parser LispVal
---parseNumberBase = do
---           char '#'
---           x <- oneOf("bodx")
---           y <- many1(digit)
---           return $ case x of
---              'b' -> fst (head (readInt 2 isBinDigit digitToInt y))
---              'o' -> fst (head (readOct y))
---              'd' -> fst (head (readDec y))
---              'x' -> fst (head (readHex y))
+parseNumberBase :: Parser LispVal
+parseNumberBase = do
+           char '#'
+           x <- oneOf("bodx")
+           let reader = case x of
+                 'b' -> fst . head . (readInt 2 isBinDigit digitToInt)
+                 'o' -> fst . head . readOct
+                 'd' -> fst . head . readDec
+                 'x' -> fst . head . readHex
+           let parse = case x of
+                 'b' -> oneOf("10")
+                 'o' -> oneOf("01234567")
+                 'd' -> digit
+                 'x' -> digit <|> oneOf("ABCDEFabcdef")
+           (liftM (Number . reader) $ many1 parse) -- No return - it's actually a monad thing
 
 parseCharacter :: Parser LispVal
 parseCharacter = do
@@ -109,9 +114,9 @@ parseCharacter = do
 -- Expression Parser - Top level parser
 parseExpr :: Parser LispVal
 parseExpr = (try parseCharacter)
+          <|> (try parseNumber)
           <|> parseAtom
           <|> parseString
-          <|> parseNumber
 
 
 -- Program Entry Point
