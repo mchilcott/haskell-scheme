@@ -3,7 +3,7 @@ from testbench import tester
 t = tester()
 
 t.config = {
-    "cmd" : ["./parser"],
+    "cmd" : ["./Parser"],
     "name" : "Scheme Parser",
     "log_level" : tester.LOG_ERR
 }
@@ -93,9 +93,6 @@ def run(t):
     t.run_test(test)
     
 
-                    
-
-
     # String
     test['name'] = "Parser::String"
     test['args'] = ["\"string\""]
@@ -113,6 +110,38 @@ def run(t):
     t.run_test(test)
 
 
+    # List
+    test['name'] = "Parser::List"
+    test['args'] = ["(atom 987 02)"]
+    test['stdout_check'] = t.outputContains("List [Atom \"atom\",Number 987,Number 2]")
+    t.run_test(test)
+
+    test['name'] = "Parser::List:Nested"
+    test['args'] = ["(a (nested) test)"]
+    test['stdout_check'] = t.outputContains("List [Atom \"a\",List [Atom \"nested\"],Atom \"test\"]")
+    t.run_test(test)
+
+    test['name'] = "Parser::List:Dotted"
+    test['args'] = ["(dotted . list)"]
+    test['stdout_check'] = t.outputContains("DottedList [Atom \"dotted\"] (Atom \"list\")")
+    t.run_test(test)
+
+    test['name'] = "Parser::List:Quoted"
+    test['args'] = ["(atom 'test)"]
+    test['stdout_check'] = t.outputContains("List [Atom \"atom\",List [Atom \"quote\",Atom \"test\"]]")
+    t.run_test(test)
+
+    test['name'] = "Parser::List:Quasiquoted"
+    test['args'] = ["(atom `test)"]
+    test['stdout_check'] = t.outputContains("List [Atom \"atom\",List [Atom \"quasiquote\",Atom \"test\"]]")
+    t.run_test(test)
+
+    test['name'] = "Parser::List:Unuoted"
+    test['args'] = ["(atom ,test)"]
+    test['stdout_check'] = t.outputContains("List [Atom \"atom\",List [Atom \"unquote\",Atom \"test\"]]")
+    t.run_test(test)
+
+    
 run(t)
 
 t.final_print()

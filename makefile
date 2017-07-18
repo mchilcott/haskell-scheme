@@ -1,6 +1,9 @@
-all: parser
+all: parser eval
 
-parser: parser.hs
+parser: Parser.hs
+	ghc $^
+
+eval: Eval.hs
 	ghc $^
 
 clean:
@@ -10,23 +13,24 @@ clean:
 
 # Some very poor testing
 test:
+	python parsertest.py
 # Atom
-	./parser "atom"
+#	./parser "atom"
 # Boolean
-	./parser "#t"
-	./parser "#f"
+#	./parser "#t"
+#	./parser "#f"
 # Character
-	./parser "#\a"
-	./parser "#\A"
-	./parser "#\("
-	./parser "#\ "
-	./parser "#\space"
-	./parser "#\newline"
+#	./parser "#\a"
+#	./parser "#\A"
+#	./parser "#\("
+#	./parser "#\ "
+#	./parser "#\space"
+#	./parser "#\newline"
 # Number
-	./parser 8375
-	./parser 83.75
+#	./parser 8375
+#	./parser 83.75
 # String
-	./parser "\"string\""
-	./parser "\"\\\"\""
-	./parser "\"\n\""
-	./parser "\"\f\""
+#	./parser "\"string\""
+#	./parser "\"\\\"\""
+#	./parser "\"\n\""
+#	./parser "\"\f\""
