@@ -1,9 +1,9 @@
---module Parser
---(
---LispVal (..),
---parseExpr
---)
---where
+module Parser
+(
+LispVal (..),
+parseExpr
+)
+where
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
 import Control.Monad
@@ -175,9 +175,9 @@ parseExpr = (try parseCharacter)
 
 
 -- Program Entry Point
-main :: IO ()
-main = do 
-    (expr:_) <- getArgs
-    putStrLn (expr)
-    putStrLn (readExpr expr)
+--main :: IO ()
+--main = do 
+--    (expr:_) <- getArgs
+--    putStrLn (expr)
+--    putStrLn (readExpr expr)
 
